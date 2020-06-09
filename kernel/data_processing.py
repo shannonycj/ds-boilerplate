@@ -4,15 +4,15 @@ from kernel import utils
 
 
 class DataProcessor:
-    def __init__(self, X, model_name=None, normalize=False):
+    def __init__(self, X, model_name=None, normalize=False, max_onehot=10):
         self.id_col = X.index.name
         self.num_cols, self.cat_cols = utils.get_feature_types(X)
         self.save_path = utils.init_model_dir(model_name)
         if self.save_path is not None:
-            self.data = self.__process_features(X, normalize)
+            self.data = self.__process_features(X, normalize, max_onehot)
 
-    def __process_features(self, X, normalize):
-        data, self.cat_info = utils.cat_processing(X, self.cat_cols, self.save_path)
+    def __process_features(self, X, normalize, max_onehot):
+        data, self.cat_info = utils.cat_processing(X, self.cat_cols, self.save_path, max_onehot)
         data, self.num_info = utils.num_processing(data, self.num_cols, self.save_path, normalize)
         self.feature_cols = self.num_info['columns'] + self.cat_info['columns']
         return data[self.feature_cols].copy()

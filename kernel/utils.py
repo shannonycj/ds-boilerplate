@@ -70,12 +70,12 @@ def init_model_dir(model_name=None):
         return None
 
 
-def cat_processing(X, cat_cols, save_path):
+def cat_processing(X, cat_cols, save_path, max_onehot):
     one_hot, label, cat_features = [], [], []
     for fea in cat_cols:
         X[fea] = X[fea].fillna('UNK')
         card = X[fea].nunique()
-        if card > 5:
+        if card > max_onehot:
             enc = sk_preprocessing.LabelEncoder()
             X[fea] = enc.fit_transform(X[fea])
             label.append(fea)
@@ -126,7 +126,7 @@ def num_processing(X, num_cols, save_path, normalize=False):
 
 def rf_params():
     n_estimators = [int(x) for x in np.linspace(start=200, stop=2000, num=10)]
-    max_features = ['auto', 'sqrt']
+    max_features = ['auto', 'sqrt', 'log2']
     max_depth = [3, 5, 8, 10, 15, 20, 30, 50]
     max_depth.append(None)
     min_samples_split = [2, 5, 10, 20]
@@ -137,5 +137,7 @@ def rf_params():
                    'max_depth': max_depth,
                    'min_samples_split': min_samples_split,
                    'min_samples_leaf': min_samples_leaf,
-                   'bootstrap': bootstrap}
+                   'bootstrap': bootstrap,
+                   'criterion': ['gini', 'entropy'],
+                   'ccp_alpha': [0., 0.1, 0.5, 1.]}
     return random_grid

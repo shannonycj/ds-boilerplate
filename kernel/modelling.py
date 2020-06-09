@@ -28,8 +28,8 @@ def train_rf_classifier(X, y, n_iter=100, cv=3, seed=1):
     X_train, X_test, y_train, y_test = sk_model_selection.train_test_split(
         X, y, test_size=.3, random_state=seed)
     grid = sk_model_selection.RandomizedSearchCV(
-        RandomForestClassifier(), random_grid, n_iter=100, cv=3, verbose=2,
-        random_state=1, n_jobs = -1)
+        RandomForestClassifier(), random_grid, n_iter=n_iter, cv=cv, verbose=2,
+        random_state=seed, n_jobs=-1)
     grid.fit(X_train, y_train)
     clf = grid.best_estimator_
     print(f'training score: {clf.score(X_train, y_train)}')
@@ -45,13 +45,14 @@ def train_lr_classifier(X, y, n_iter=20, cv=3, seed=1):
         'fit_intercept': [True, False],
         'max_iter': [1000, 2000],
         'C': [i * 0.1 for i in range(10)] + [1., 2., 5., 10.],
-        'class_weight': [None, 'balanced']
+        'class_weight': [None, 'balanced'],
+        'solver': ['lbfgs']
         }
     X_train, X_test, y_train, y_test = sk_model_selection.train_test_split(
         X, y, test_size=.3, random_state=seed)
     grid = sk_model_selection.RandomizedSearchCV(
-        LogisticRegression(solver='lbfgs'), params, n_iter=20, cv=3, verbose=2,
-        random_state=1, n_jobs=-1)
+        LogisticRegression(), params, n_iter=n_iter, cv=cv, verbose=2,
+        random_state=seed, n_jobs=-1)
     grid.fit(X_train, y_train)
     clf = grid.best_estimator_
     print(f'training score: {clf.score(X_train, y_train)}')
