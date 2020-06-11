@@ -1,7 +1,6 @@
 import sklearn.model_selection as sk_model_selection
 import sklearn.metrics as sk_metrics
 import numpy as np
-
 from kernel import utils
 
 
@@ -61,3 +60,31 @@ def train_lr_classifier(X, y, n_iter=20, cv=3, seed=1):
     print(grid.best_params_)
     utils.eval_clssifier(clf, X_test, y_test)
     return clf, grid.best_params_, LogisticRegression
+
+
+def train_catboost_classifier(df_fea, labels, cat_cols, params=None, plot=True):
+    import catboost
+    X_train, X_test, y_train, y_test = sk_model_selection.train_test_split(
+        df_fea, labels, test_size=.3, random_state=1)
+    cat_fea = np.where(X_train.columns.isin(cat_cols))[0]
+    if params is None:
+        params = {'iterations':5000,
+                'learning_rate':0.01,
+                'cat_features': cat_fea,
+                'depth':3,
+                'eval_metric':'AUC',
+                'verbose':200,
+                'od_type':"Iter", # overfit detector
+                'od_wait':500, # most recent best iteration to wait before stopping
+                'random_seed': 1
+                }
+    else:
+        params['cat_features'] = cat_fea
+
+    cat_model = catboost.CatBoostClassifier(**params)
+    cat_model.fit(X_train, y_train,   
+            eval_set=(X_test, y_test), 
+            use_best_model=True, # True if we don't want to save trees created after iteration with the best validation score
+            plot=plot  
+            )
+    return cat_model, X_train.columns.tolist()

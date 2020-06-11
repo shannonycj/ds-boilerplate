@@ -44,9 +44,9 @@ def split_feature_target(df, target_col):
     return X, y
 
 
-def get_feature_types(X):
-    feature_columns = set(X.columns.tolist())
-    is_num_col = lambda col: pd.api.types.is_numeric_dtype(X[col])
+def get_feature_types(df_fea):
+    feature_columns = set(df_fea.columns.tolist())
+    is_num_col = lambda col: pd.api.types.is_numeric_dtype(df_fea[col])
     num_cols = [*filter(is_num_col, feature_columns)]
     cat_cols = list(feature_columns - set(num_cols))
     return num_cols, cat_cols
@@ -72,10 +72,11 @@ def init_model_dir(model_name=None):
         return None
 
 
-def cat_processing(X, cat_cols, save_path, max_onehot):
+def cat_processing(X, cat_cols, max_onehot):
     one_hot, label, cat_features = [], [], []
+    encoders = {}
     for fea in cat_cols:
-        X[fea] = X[fea].fillna('UNK')
+        X[fea] = X[fea].fillna('UNK').astype(str)
         card = X[fea].nunique()
         if card > max_onehot:
             enc = sk_preprocessing.LabelEncoder()
@@ -90,34 +91,27 @@ def cat_processing(X, cat_cols, save_path, max_onehot):
                 X[n] = v
             one_hot.append(fea)
             cat_features.extend(feature_names)
-        enc_path = os.path.join(save_path, f'encoders/{fea}_enc.pkl')
-        joblib.dump(enc, enc_path)
-    print('All encoders saved.')
+        encoders[fea] = enc
     processor_info = {
         'one_hot': one_hot,
         'label': label,
-        'columns': cat_features
+        'columns': cat_features,
+        'encoders': encoders
     }
     return X, processor_info
 
 
-def num_processing(X, num_cols, save_path, normalize=False):
+def num_processing(X, num_cols, normalize=False):
     medians = {}
     scaler = None
     for fea in num_cols:
         medians[fea] = X[fea].median()
         X.loc[X[fea].isnull(), fea] = medians[fea]
-    with open(os.path.join(save_path, 'medians.json'), 'w') as f:
-        json.dump(medians, f)
-    print('All numeric medians saved.')
     if normalize:
         scaler = sk_preprocessing.StandardScaler()
         res = scaler.fit_transform(X[num_cols].values).T
         for i, n in enumerate(num_cols):
             X[n] = res[i]
-        scaler_path = os.path.join(save_path, f'scaler.pkl')
-        joblib.dump(scaler, scaler_path)
-        print('Scaler saved.')
     processor_info = {
         'columns': num_cols,
         'medians': medians,
