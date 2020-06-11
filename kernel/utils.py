@@ -8,6 +8,8 @@ import joblib
 import pandas as pd
 import numpy as np
 import sklearn.preprocessing as sk_preprocessing
+import sklearn.metrics as sk_metrics
+import matplotlib.pyplot as plt
 
 from config import __config
 
@@ -23,7 +25,7 @@ def detect_id_col(df):
         if df[col].hasnans:
             continue
         elif pd.api.types.is_numeric_dtype(df[col]):
-            if set(df[col].tolist()) == set(np.arange(len(df)) + 1):
+            if len(set(df[col].tolist())) == len(df) and ('ID' in col or 'Id' in col):
                 print(f'Found id col: {col}')
                 try:
                     df.set_index(col, inplace=True)
@@ -141,3 +143,13 @@ def rf_params():
                    'criterion': ['gini', 'entropy'],
                    'ccp_alpha': [0., 0.1, 0.5, 1.]}
     return random_grid
+
+
+def eval_clssifier(clf, X_test, y_true):
+    probs = clf.predict_proba(X_test)[:, 1]
+    fpr, tpr, thresholds = sk_metrics.roc_curve(y_true, probs)
+    auc = sk_metrics.auc(fpr, tpr)
+    print(f'AUC: {auc}')
+    plt.plot(fpr, tpr, label='ROC', lw=2)
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.show()

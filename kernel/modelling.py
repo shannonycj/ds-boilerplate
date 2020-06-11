@@ -35,6 +35,7 @@ def train_rf_classifier(X, y, n_iter=100, cv=3, seed=1):
     print(f'training score: {clf.score(X_train, y_train)}')
     print(f'testing score: {clf.score(X_test, y_test)}')
     print(grid.best_params_)
+    utils.eval_clssifier(clf, X_test, y_test)
     return clf, grid.best_params_, RandomForestClassifier
 
 
@@ -58,4 +59,5 @@ def train_lr_classifier(X, y, n_iter=20, cv=3, seed=1):
     print(f'training score: {clf.score(X_train, y_train)}')
     print(f'testing score: {clf.score(X_test, y_test)}')
     print(grid.best_params_)
+    utils.eval_clssifier(clf, X_test, y_test)
     return clf, grid.best_params_, LogisticRegression
