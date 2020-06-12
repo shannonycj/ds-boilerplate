@@ -1,4 +1,6 @@
 {
-    "data_path": "./data",
+    "source_data_path": "./data/source",
+    "staging_data_path": "./data/staging",
+    "output_data_path": "./data/output",
     "model_path": "./models"
 }

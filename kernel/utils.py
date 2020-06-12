@@ -64,7 +64,6 @@ def init_model_dir(model_name=None):
         shutil.rmtree(path)
     try:
         os.mkdir(path)
-        os.mkdir(os.path.join(path, 'encoders'))
         return path
     except Exception as e:
         print('Creating model dir failed')

@@ -16,13 +16,13 @@ def catboost_preprocessing(df_fea, **kwargs):
 
 
 class GenericDataProcessor:
-    def __init__(self, df_fea, model_name=None, normalize=False, max_onehot=10, **kwargs):
-        self.id_col = df_fea.index.name
+    def __init__(self, df, label_col, model_name=None, normalize=False, max_onehot=10, **kwargs):
+        self.id_col = df.index.name
         if kwargs.get('cat_cols', False):
             self.cat_cols = kwargs['cat_cols']
-            self.num_cols = list(set(df_fea.columns) - set(self.cat_cols))
+            self.num_cols = list(set(df_fea.columns) - set(self.cat_cols + [label_col]))
         else:
-            self.num_cols, self.cat_cols = utils.get_feature_types(df_fea)
+            self.num_cols, self.cat_cols = utils.get_feature_types(df.drop(label_col, axis=1))
         self.save_path = utils.init_model_dir(model_name)
         if self.save_path is not None:
             self.data = self.__process_features(df_fea, normalize, max_onehot)
